@@ -10,7 +10,7 @@ exit /b
 #  니케(NIKKE) PC 런처 감염 검사 - 읽기 전용
 #   * 파일과 레지스트리를 "읽기만" 합니다. 아무것도 지우거나 바꾸지 않습니다.
 #   * 인터넷에 접속하지 않습니다.
-#   * 판정 기준: MotherSphere 공개 분석 (2026-11-04 기준)
+#   * 판정 기준: MotherSphere 공개 분석과 레벨 인피니트 공식 안내 (2026-11-05 기준)
 #     https://gist.github.com/MotherSphere/d6c049a09ba8ac3085c51ee9df24a4e5
 #  메모장으로 열어서 내용을 직접 확인할 수 있습니다.
 # =====================================================================
@@ -154,7 +154,7 @@ Say
 
 # 지금 런처가 켜져 있는지
 $running = @(Get-Process -ErrorAction SilentlyContinue | Where-Object {
-    $_.ProcessName -eq 'nikke_launcher' -or ($_.ProcessName -eq 'tbs_browser' -and "$($_.Path)" -match 'NIKKE')
+    $_.ProcessName -like 'nikke_launcher*' -or ($_.ProcessName -eq 'tbs_browser' -and "$($_.Path)" -match 'NIKKE')
 })
 
 # ---------------------------------------------------------------------
@@ -258,7 +258,7 @@ foreach ($log in @($LogFiles.Values)) {
         $dl = Get-ChildItem -LiteralPath $tg -File -ErrorAction SilentlyContinue |
               Where-Object { $_.Length -lt $MaxBytes -and (Test-FileHas $_.FullName @('insight.bundle')) } |
               Select-Object -First 1
-        if ($dl) { $Infected.Add("악성코드 본체(insight.bundle) 다운로드 기록: $($dl.FullName)") }
+        if ($dl) { $Suspect.Add("악성코드 본체(insight.bundle) 요청 기록 - 요청이 실패했을 수도 있어, 감염 여부는 debug.log의 k2f_chan으로 판단합니다: $($dl.FullName)") }
     }
 }
 
@@ -361,7 +361,7 @@ if ($Infected.Count -gt 0) {
     Say '   3. 구글, 디스코드, 스팀 등에서 "모든 기기에서 로그아웃"을 하세요. (쿠키를 훔치면 비밀번호 없이도 로그인됩니다)' Gray
     Say '   4. 암호화폐 지갑이 있다면 새 지갑(새 복구 문구)으로 옮기세요.' Gray
     Say '   5. 가장 안전한 방법은 윈도우 재설치입니다. 백신 검사가 깨끗하게 나와도 안심할 수 없습니다.' Gray
-    Say '   6. 이 화면을 캡처해 두세요.' Gray
+    Say '   6. 이 화면을 캡처해 두세요. 피해가 생기면 레벨 인피니트 고객센터에 접수할 때 씁니다.' Gray
 }
 elseif ($Suspect.Count -gt 0) {
     Say '  ■ 결과: 노출 - 악성코드가 실행된 흔적은 없습니다' Yellow
@@ -370,8 +370,9 @@ elseif ($Suspect.Count -gt 0) {
     Say
     Say '  변조된 스크립트는 거쳐 갔지만, 공격자 서버가 악성코드 본체를 보내지 않은 경우로 보입니다.' Gray
     Say '  권장' White
-    Say '   1. 공식 발표 전까지 니케 PC 런처를 켜지 마세요.' Gray
-    Say ('   2. 다시 쓰기 전에 이 폴더를 지우세요: {0}\nikke_launcher\tbs_cache' -f $env:APPDATA) Gray
+    Say ('   1. 런처를 다시 쓰기 전에 이 폴더를 지우세요: {0}\nikke_launcher\tbs_cache' -f $env:APPDATA) Gray
+    Say '      (구글 플레이 게임즈판은 nikke_launcher_google, 그 밖에 nikke_launcher_hmt 폴더도 같습니다)' Gray
+    Say '   2. 레벨 인피니트는 11월 5일부터 런처를 정상 이용할 수 있다고 안내합니다. 실행 전 웹 브라우저를 모두 닫으세요.' Gray
     Say '   3. 불안하면 중요한 계정 비밀번호를 바꿔 두세요.' Gray
 }
 elseif ($NikkeSeen) {
@@ -381,8 +382,10 @@ elseif ($NikkeSeen) {
     if ($LogFiles.Count -eq 0) {
         Say '  (단, 니케 설치 폴더를 찾지 못해 debug.log는 확인하지 못했고, 남아 있는 AppData 기록만 확인했습니다.)' Yellow
     }
-    Say '  그래도 공식 발표 전까지는 런처를 켜지 말고, 다시 쓰기 전에 아래 폴더를 지우세요.' Gray
+    Say '  런처를 다시 쓰기 전에 아래 폴더를 지우세요. (구글 플레이 게임즈판은 nikke_launcher_google)' Gray
     Say ('   {0}\nikke_launcher\tbs_cache' -f $env:APPDATA) Gray
+    Say '  11월 5일 이후 런처의 자동 검사가 악성 프로그램을 찾아 지웠다면 흔적이 남지 않습니다.' Yellow
+    Say '  그런 안내 창을 본 적이 있다면 감염으로 보고 대응하세요.' Yellow
 }
 else {
     Say '  ■ 결과: 니케 없음' Green
@@ -391,6 +394,6 @@ else {
 }
 
 Say
-Say '  ※ 2026년 11월 4일까지 공개된 분석의 흔적을 기준으로 한 검사입니다.' DarkGray
+Say '  ※ 2026년 11월 5일까지 공개된 분석과 공식 안내를 기준으로 한 검사입니다.' DarkGray
 Say '    "흔적 없음"이 100% 안전을 보장하지는 않습니다.' DarkGray
 Say
